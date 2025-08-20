@@ -1,10 +1,10 @@
-// src/lib/axios.ts
 import type { InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosError } from 'axios';
+import { API_BASE_URL } from '../static/constants.ts';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true, // refresh 쿠키 사용 위해 필수
+  baseURL: API_BASE_URL,
+  withCredentials: true,
 });
 
 let accessToken: string | null = localStorage.getItem('accessToken');
@@ -54,7 +54,7 @@ api.interceptors.response.use(
       original._retry = true;
       isRefreshing = true;
       try {
-        const { data } = await api.put('/auth/tokens'); // refresh cookie로 재발급
+        const { data } = await api.put('/auth/tokens');
         if (typeof data?.accessToken === 'string') {
           setAccessToken(data.accessToken);
         }
