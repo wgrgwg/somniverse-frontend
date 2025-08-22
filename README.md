@@ -1,69 +1,37 @@
-# React + TypeScript + Vite
+# Somniverse Frontend (React + TypeScript)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> 백엔드: `wgrgwg/somniverse-backend` dev 브랜치 API 명세 기반  
+> BASE URL: `.env`의 `VITE_API_BASE_URL="http://localhost:8080/api"`
 
-Currently, two official plugins are available:
+## 기술 스택
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React, TypeScript, Vite
+- axios (+ 인터셉터로 토큰 자동첨부/재발급)
+- @tanstack/react-query (데이터 캐싱/로딩/에러 표준화)
+- TailwindCSS + DaisyUI (UI)
 
-## Expanding the ESLint configuration
+## 라우팅 개요
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `/` 공개 꿈 목록 (`GET /api/dreams`)
+- `/login`, `/signup`, `/oauth2/redirect`
+- 보호 라우트(로그인 필요):
+    - `/me` 내정보
+    - `/dreams/me` 내 꿈 목록 (`GET /api/dreams/me`)
+    - `/dreams/new`, `/dreams/:id`, `/dreams/:id/edit`
+- 관리자 전용:
+    - `/admin/dreams` 전체 꿈 목록 (`GET /api/admin/dreams`)
+    - `/admin/members`, `/admin/members/:id`
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 인증/권한
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- 로그인: `POST /api/auth/tokens` → accessToken 저장, refresh는 HttpOnly 쿠키
+- 인터셉터: 401 발생 시 `PUT /api/auth/tokens`로 재발급, 실패 시 로그아웃
+- 상단바:
+    - 항상 `꿈일기`
+    - 로그인 시 `내정보`
+    - ADMIN 시 `회원관리`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## UI 가이드
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- DaisyUI 컴포넌트 조합: `card`, `btn`, `input`, `textarea`, `table`, `toggle`, `alert`, `loading` 등
+- `components/`의 재사용 컴포넌트를 우선 사용해 중복 최소화
