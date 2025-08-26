@@ -10,10 +10,18 @@ export default function OAuthButtons() {
   };
   return (
     <div className="flex gap-2">
-      <button className="btn btn-outline" onClick={() => start('google')}>
+      <button
+        type="button"
+        className="btn btn-outline"
+        onClick={() => start('google')}
+      >
         Google로 계속
       </button>
-      <button className="btn btn-outline" onClick={() => start('naver')}>
+      <button
+        type="button"
+        className="btn btn-outline"
+        onClick={() => start('naver')}
+      >
         Naver로 계속
       </button>
     </div>

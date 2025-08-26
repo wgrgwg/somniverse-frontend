@@ -2,9 +2,12 @@ import api, { setAccessToken } from '../../lib/axios';
 import type { LoginPayload, LoginResponse } from './types';
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>('/auth/tokens', payload);
-  if (data?.accessToken) setAccessToken(data.accessToken);
-  return data;
+  const res = await api.post<LoginResponse>('/auth/tokens', payload);
+
+  const accessToken = res.data.data?.accessToken;
+  if (accessToken) setAccessToken(accessToken);
+
+  return res.data;
 }
 
 export async function logout(): Promise<void> {
@@ -13,7 +16,19 @@ export async function logout(): Promise<void> {
 }
 
 export async function refresh(): Promise<string | null> {
-  const { data } = await api.put<{ accessToken: string }>('/auth/tokens');
-  if (data?.accessToken) setAccessToken(data.accessToken);
-  return data?.accessToken ?? null;
+  try {
+    const res = await api.put<{ data: { accessToken: string } }>(
+      '/auth/tokens',
+    );
+
+    const accessToken = res.data.data?.accessToken;
+    if (accessToken) {
+      setAccessToken(accessToken);
+      return accessToken;
+    }
+    return null;
+  } catch (e) {
+    setAccessToken(null);
+    return null;
+  }
 }

@@ -14,6 +14,10 @@ export interface LoginPayload {
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  member: Member;
+  success: boolean;
+  message: string;
+  data: {
+    accessToken: string;
+    member?: Member;
+  };
 }

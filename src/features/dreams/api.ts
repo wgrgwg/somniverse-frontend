@@ -6,22 +6,22 @@ export async function getPublicDreams(
   size = 10,
 ): Promise<Page<Dream>> {
   const res = await api.get('/dreams', { params: { page, size } });
-  return res.data;
+  return res.data.data;
 }
 
 export async function getMyDreams(page = 0, size = 10): Promise<Page<Dream>> {
   const res = await api.get('/dreams/me', { params: { page, size } });
-  return res.data;
+  return res.data.data;
 }
 
 export async function getDreamById(id: number): Promise<Dream> {
   const res = await api.get(`/dreams/${id}`);
-  return res.data;
+  return res.data.data;
 }
 
 export async function createDream(payload: DreamPayload): Promise<Dream> {
   const res = await api.post('/dreams', payload);
-  return res.data;
+  return res.data.data;
 }
 
 export async function updateDream(
@@ -29,7 +29,7 @@ export async function updateDream(
   payload: DreamPayload,
 ): Promise<Dream> {
   const res = await api.put(`/dreams/${id}`, payload);
-  return res.data;
+  return res.data.data;
 }
 
 export async function deleteDream(id: number): Promise<void> {
@@ -41,7 +41,7 @@ export async function getAdminDreams(
   size = 10,
 ): Promise<Page<Dream>> {
   const res = await api.get('/admin/dreams', { params: { page, size } });
-  return res.data;
+  return res.data.data;
 }
 
 export async function deleteDreamByAdmin(id: number): Promise<void> {
