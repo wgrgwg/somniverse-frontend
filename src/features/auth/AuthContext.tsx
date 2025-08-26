@@ -33,9 +33,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const restore = async () => {
+    const storedToken = localStorage.getItem('accessToken');
+
+    if (storedToken) {
+      setUser(memberFromToken(storedToken));
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = await refresh();
-      setUser(memberFromToken(token));
+      if (token) {
+        setUser(memberFromToken(token));
+      } else {
+        setUser(null);
+      }
     } catch {
       setUser(null);
     } finally {
@@ -55,8 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       login: async (payload) => {
         const res = await apiLogin(payload);
-        setUser(res.member ?? memberFromToken(res.accessToken));
+        const token = res.data?.accessToken; // 변경
+        setUser(res.data?.member ?? memberFromToken(token));
       },
+
       logout: async () => {
         await apiLogout();
         setUser(null);

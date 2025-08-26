@@ -13,7 +13,7 @@ export const OAUTH_PROVIDERS = providerIds.map(
   }),
 ) satisfies ReadonlyArray<{ id: string; label: string }>;
 
-export const OAUTH2_AUTH_PATH = import.meta.env.VITE_OAUTH2_REDIRECT_URI;
+export const OAUTH2_AUTH_PATH = import.meta.env.VITE_OAUTH2_PATH;
 
 export const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin;
 

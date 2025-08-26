@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from '../features/auth/AuthContext';
+import { useAuthContext } from '../../features/auth/AuthContext.tsx';
 
 export default function OAuthCallback() {
   const nav = useNavigate();
@@ -10,7 +10,7 @@ export default function OAuthCallback() {
     (async () => {
       try {
         await restore();
-        nav('/'); // 홈(공개 꿈 목록) 또는 /dreams/me 등
+        nav('/');
       } catch {
         nav('/login');
       }

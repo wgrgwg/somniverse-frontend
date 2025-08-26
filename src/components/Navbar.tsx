@@ -20,7 +20,11 @@ export default function Navbar() {
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1 gap-2">
           <li>
-            <Link to="/dreams/me">꿈일기</Link>
+            <Link to="/dreams">공개 꿈일기</Link>
+          </li>
+
+          <li>
+            <Link to="/dreams/me">내 꿈일기</Link>
           </li>
 
           {user && (user.role === 'MANAGER' || user.role === 'ADMIN') && (

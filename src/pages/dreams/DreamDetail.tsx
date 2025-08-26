@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getDreamById } from './api.ts';
-import type { Dream } from './types.ts';
-import CommentList from '../../components/CommentList';
-import CommentForm from '../../components/CommentForm';
+import { getDreamById } from '../../features/dreams/api.ts';
+import type { Dream } from '../../features/dreams/types.ts';
+import CommentList from '../../components/CommentList.tsx';
+import CommentForm from '../../components/CommentForm.tsx';
 
 export default function DreamDetail() {
   const { id } = useParams<{ id: string }>();
