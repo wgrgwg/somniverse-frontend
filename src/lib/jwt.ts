@@ -13,3 +13,9 @@ export function parseJwt<T = unknown>(token: string): T | null {
     return null;
   }
 }
+
+export function isTokenExpired(token: string): boolean {
+  const claims = parseJwt<{ exp: number }>(token);
+  if (!claims?.exp) return true;
+  return Date.now() >= claims.exp * 1000;
+}

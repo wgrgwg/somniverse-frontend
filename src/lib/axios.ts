@@ -1,6 +1,8 @@
 import type { InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL } from '../static/constants.ts';
+import { eventBus } from './eventBus';
+import { isTokenExpired } from './jwt';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,6 +11,8 @@ const api = axios.create({
 
 let accessToken: string | null = localStorage.getItem('accessToken');
 
+export const getAccessToken = () => accessToken;
+
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
   if (token) localStorage.setItem('accessToken', token);
@@ -16,8 +20,11 @@ export const setAccessToken = (token: string | null) => {
 };
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  if (accessToken) {
-    config.headers?.set('Authorization', `Bearer ${accessToken}`);
+  if (accessToken && !isTokenExpired(accessToken)) {
+    config.headers = config.headers ?? {};
+    config.headers['Authorization'] = `Bearer ${accessToken}`;
+  } else {
+    config.headers?.delete?.('Authorization');
   }
   return config;
 });
@@ -28,6 +35,16 @@ const notify = (t: string | null) => {
   waiters.forEach((w) => w(t));
   waiters = [];
 };
+
+async function requestRefreshToken() {
+  const { data } = await api.put('/auth/tokens');
+  const newToken = data?.data?.accessToken;
+
+  if (!newToken) throw new Error('No new access token from refresh');
+
+  setAccessToken(newToken);
+  return newToken;
+}
 
 api.interceptors.response.use(
   (res) => res,
@@ -53,17 +70,16 @@ api.interceptors.response.use(
 
       original._retry = true;
       isRefreshing = true;
+
       try {
-        const { data } = await api.put('/auth/tokens');
-        if (typeof data?.accessToken === 'string') {
-          setAccessToken(data.accessToken);
-        }
-        notify(data?.accessToken ?? null);
-        original.headers?.set('Authorization', `Bearer ${data?.accessToken}`);
+        const newToken = await requestRefreshToken();
+        notify(newToken);
+        original.headers?.set('Authorization', `Bearer ${newToken}`);
         return api(original);
       } catch (e) {
         setAccessToken(null);
         notify(null);
+        eventBus.emit('unauthorized');
         return Promise.reject(e);
       } finally {
         isRefreshing = false;

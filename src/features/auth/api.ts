@@ -11,8 +11,11 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 export async function logout(): Promise<void> {
-  await api.delete('/auth/tokens');
-  setAccessToken(null);
+  try {
+    await api.delete('/auth/tokens');
+  } finally {
+    setAccessToken(null);
+  }
 }
 
 export async function refresh(): Promise<string | null> {
@@ -27,7 +30,7 @@ export async function refresh(): Promise<string | null> {
       return accessToken;
     }
     return null;
-  } catch (e) {
+  } catch {
     setAccessToken(null);
     return null;
   }
