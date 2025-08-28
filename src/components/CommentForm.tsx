@@ -11,6 +11,7 @@ export default function CommentForm({ dreamId, onSuccess }: Props) {
   const { user } = useAuthContext();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!user) {
     return (
@@ -22,11 +23,17 @@ export default function CommentForm({ dreamId, onSuccess }: Props) {
     e.preventDefault();
     if (!content.trim()) return;
 
-    setLoading(true);
-    await createComment(dreamId, content);
-    setContent('');
-    onSuccess();
-    setLoading(false);
+    try {
+      setLoading(true);
+      setError(null);
+      await createComment(dreamId, content);
+      setContent('');
+      onSuccess();
+    } catch {
+      setError('댓글 작성에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,10 +44,12 @@ export default function CommentForm({ dreamId, onSuccess }: Props) {
         onChange={(e) => setContent(e.target.value)}
         placeholder="댓글을 입력하세요..."
         className="input input-bordered flex-1"
+        disabled={loading}
       />
-      <button className="btn btn-primary" disabled={loading}>
-        작성
+      <button className="btn btn-primary" disabled={loading || !content.trim()}>
+        {loading ? '작성 중...' : '작성'}
       </button>
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </form>
   );
 }
