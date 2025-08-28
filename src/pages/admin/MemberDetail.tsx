@@ -11,7 +11,7 @@ export default function MemberDetail() {
   const memberId = Number(id);
 
   const { user: me } = useAuthContext();
-  const isSelf = me && memberId && me.id === memberId;
+  const isSelf = me ? me.id === Number(id) : false;
 
   const [member, setMember] = useState<Member | null>(null);
   const [roleDraft, setRoleDraft] = useState<Role>('USER');
@@ -183,11 +183,10 @@ export default function MemberDetail() {
                 className="select select-bordered"
                 value={roleDraft}
                 onChange={(e) => setRoleDraft(e.target.value as Role)}
-                disabled={saving || isSelf || roleDraft === member?.role}
+                disabled={saving || isSelf}
               >
                 <option value="USER">USER</option>
                 <option value="MANAGER">MANAGER</option>
-                <option value="ADMIN">ADMIN</option>
               </select>
               {isSelf && (
                 <label className="label">

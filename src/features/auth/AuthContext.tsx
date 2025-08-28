@@ -1,7 +1,15 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { parseJwt } from '../../lib/jwt';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { isTokenExpired, parseJwt } from '../../lib/jwt';
 import { login as apiLogin, logout as apiLogout, refresh } from './api';
-import type { LoginPayload, Member } from './types';
+import { eventBus } from '../../lib/eventBus';
+import type { LoginPayload, LoginResponse, Member } from './types';
 
 type AuthState = {
   user: Member | null;
@@ -10,7 +18,7 @@ type AuthState = {
   loading: boolean;
   login: (p: LoginPayload) => Promise<void>;
   logout: () => Promise<void>;
-  restore: () => Promise<void>;
+  restore: () => Promise<boolean>;
 };
 
 const Ctx = createContext<AuthState | null>(null);
@@ -19,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
 
-  function memberFromToken(token: string | null): Member | null {
+  const memberFromToken = useCallback((token: string | null): Member | null => {
     if (!token) return null;
     const claims = parseJwt<any>(token);
     if (!claims) return null;
@@ -30,33 +38,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       username: String(claims.username ?? claims.name ?? ''),
       role: (claims.role ?? 'USER') as Member['role'],
     };
-  }
+  }, []);
 
-  const restore = async () => {
+  const restore = useCallback(async (): Promise<boolean> => {
     const storedToken = localStorage.getItem('accessToken');
 
-    if (storedToken) {
+    if (storedToken && !isTokenExpired(storedToken)) {
       setUser(memberFromToken(storedToken));
       setLoading(false);
-      return;
+      return true;
     }
 
     try {
       const token = await refresh();
       if (token) {
         setUser(memberFromToken(token));
+        setLoading(false);
+        return true;
       } else {
         setUser(null);
+        localStorage.removeItem('accessToken');
+        setLoading(false);
+        return false;
       }
     } catch {
       setUser(null);
-    } finally {
+      localStorage.removeItem('accessToken');
       setLoading(false);
+      return false;
     }
-  };
+  }, [memberFromToken]);
+
+  const login = useCallback(
+    async (payload: LoginPayload) => {
+      const res: LoginResponse = await apiLogin(payload);
+      const token = res.data?.accessToken ?? null;
+      const member =
+        res.data?.member ?? (token ? memberFromToken(token) : null);
+      setUser(member);
+    },
+    [memberFromToken],
+  );
+
+  const logout = useCallback(async () => {
+    await apiLogout();
+    setUser(null);
+  }, []);
 
   useEffect(() => {
     restore();
+  }, [restore]);
+
+  useEffect(() => {
+    const onUnauthorized = () => {
+      setUser(null);
+      localStorage.removeItem('accessToken');
+    };
+    eventBus.on('unauthorized', onUnauthorized);
+    return () => eventBus.off('unauthorized', onUnauthorized);
   }, []);
 
   const value = useMemo<AuthState>(
@@ -65,19 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAdmin: user?.role === 'ADMIN',
       isManager: user?.role === 'ADMIN' || user?.role === 'MANAGER',
       loading,
-      login: async (payload) => {
-        const res = await apiLogin(payload);
-        const token = res.data?.accessToken; // 변경
-        setUser(res.data?.member ?? memberFromToken(token));
-      },
-
-      logout: async () => {
-        await apiLogout();
-        setUser(null);
-      },
+      login,
+      logout,
       restore,
     }),
-    [user, loading],
+    [user, loading, login, logout, restore],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

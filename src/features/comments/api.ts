@@ -9,7 +9,7 @@ export const getComments = async (
   const res = await api.get(`/dreams/${dreamId}/comments`, {
     params: { page, size },
   });
-  return res.data;
+  return res.data.data;
 };
 
 export const createComment = async (
@@ -17,7 +17,7 @@ export const createComment = async (
   content: string,
 ): Promise<Comment> => {
   const res = await api.post(`/dreams/${dreamId}/comments`, { content });
-  return res.data;
+  return res.data.data;
 };
 
 export const deleteComment = async (

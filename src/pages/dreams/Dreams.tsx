@@ -3,7 +3,7 @@ import { getPublicDreams } from '../../features/dreams/api';
 import type { Dream } from '../../features/dreams/types';
 import Pagination from '../../components/ui/Pagination';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthContext } from '../../features/auth/AuthContext'; // ✅ 로그인 상태 확인용
+import { useAuthContext } from '../../features/auth/AuthContext';
 
 export default function Dreams() {
   const [dreams, setDreams] = useState<Dream[]>([]);
@@ -11,7 +11,7 @@ export default function Dreams() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const nav = useNavigate();
-  const { user } = useAuthContext(); // ✅ 로그인 여부 확인
+  const { user } = useAuthContext();
 
   useEffect(() => {
     setLoading(true);
@@ -25,7 +25,6 @@ export default function Dreams() {
 
   return (
     <div>
-      {/* 상단 헤더 + 작성 버튼 */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">공개 꿈 목록</h1>
         {user && (
