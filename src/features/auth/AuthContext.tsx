@@ -1,4 +1,3 @@
-// features/auth/AuthContext.tsx
 import {
   createContext,
   useCallback,

@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  createDream,
-  getDreamById,
-  updateDream,
-} from '../../features/dreams/api';
+import api from '../../lib/axios.ts';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
@@ -22,7 +18,10 @@ export default function DreamEditor({ mode }: { mode: 'create' | 'edit' }) {
   const { data } = useQuery({
     enabled: mode === 'edit' && !!id,
     queryKey: ['dream', id],
-    queryFn: () => getDreamById(Number(id)),
+    queryFn: async () => {
+      const { data } = await api.get(`/dreams/${id}`);
+      return data;
+    },
   });
 
   useEffect(() => {
@@ -30,16 +29,24 @@ export default function DreamEditor({ mode }: { mode: 'create' | 'edit' }) {
       setTitle(data.title);
       setContent(data.content);
       setDreamDate(data.dreamDate?.slice(0, 10));
-      setIsPublic(Boolean((data as any).isPublic ?? data.public));
+      setIsPublic(Boolean(data.isPublic ?? data.public));
     }
   }, [data, mode]);
 
   const mutate = useMutation({
     mutationFn: (input: any) =>
-      mode === 'create' ? createDream(input) : updateDream(Number(id), input),
+      mode === 'create'
+        ? api.post('/dreams', input).then((res) => res.data)
+        : api.put(`/dreams/${id}`, input).then((res) => res.data),
     onSuccess: (d) => {
       qc.invalidateQueries({ queryKey: ['myDreams'] });
-      nav(`/dreams/${d.id}`);
+
+      const dreamId = d?.id ?? d?.data?.id;
+      if (dreamId) {
+        nav(`/dreams/${dreamId}`);
+      } else {
+        nav('/dreams');
+      }
     },
   });
 
@@ -91,7 +98,12 @@ export default function DreamEditor({ mode }: { mode: 'create' | 'edit' }) {
           <button
             className="btn btn-primary"
             onClick={() =>
-              mutate.mutate({ title, content, dreamDate, isPublic })
+              mutate.mutate({
+                title,
+                content,
+                dreamDate,
+                isPublic,
+              })
             }
           >
             {mode === 'create' ? '작성' : '수정'}
