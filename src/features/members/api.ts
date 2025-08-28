@@ -19,15 +19,15 @@ export async function listMembers(
   } = {},
 ): Promise<Page<Member>> {
   const { data } = await api.get('/admin/members', { params });
-  return data;
+  return data.data;
 }
 
 export async function getMember(id: number): Promise<Member> {
   const { data } = await api.get(`/admin/members/${id}`);
-  return data;
+  return data.data;
 }
 
 export async function updateRole(id: number, role: Role): Promise<Member> {
   const { data } = await api.patch(`/admin/members/${id}/role`, { role });
-  return data;
+  return data.data;
 }
