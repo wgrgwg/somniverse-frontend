@@ -1,13 +1,11 @@
 export interface Comment {
   id: number;
   content: string;
-  author: {
-    id: number;
-    username: string;
-    email?: string;
-  };
+  author: string;
   createdAt: string;
   updatedAt?: string;
+  isDeleted?: boolean;
+  totalChildrenCount?: number;
 }
 
 export interface Page<T> {

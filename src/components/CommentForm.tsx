@@ -5,9 +5,10 @@ import { useAuthContext } from '../features/auth/AuthContext';
 interface Props {
   dreamId: number;
   onSuccess: () => void;
+  parentId?: number;
 }
 
-export default function CommentForm({ dreamId, onSuccess }: Props) {
+export default function CommentForm({ dreamId, onSuccess, parentId }: Props) {
   const { user } = useAuthContext();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,16 +38,19 @@ export default function CommentForm({ dreamId, onSuccess }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+    <form onSubmit={handleSubmit} className="mt-2 flex gap-2">
       <input
         type="text"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="댓글을 입력하세요..."
+        placeholder={parentId ? '답글을 입력하세요...' : '댓글을 입력하세요...'}
         className="input input-bordered flex-1"
         disabled={loading}
       />
-      <button className="btn btn-primary" disabled={loading || !content.trim()}>
+      <button
+        className="btn btn-primary btn-sm"
+        disabled={loading || !content.trim()}
+      >
         {loading ? '작성 중...' : '작성'}
       </button>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
