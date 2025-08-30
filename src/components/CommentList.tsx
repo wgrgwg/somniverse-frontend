@@ -102,8 +102,9 @@ export default function CommentList({ dreamId }: Props) {
       ) : (
         <ul className="space-y-3">
           {comments.map((comment) => {
+            console.log(user?.username + ' = ' + comment.author.username);
             const canDelete =
-              user?.username === comment.author ||
+              user?.id === comment.author.id ||
               user?.role === 'ADMIN' ||
               user?.role === 'MANAGER';
             const canReply = user && !comment.isDeleted;
@@ -114,7 +115,7 @@ export default function CommentList({ dreamId }: Props) {
                   <div>
                     <p className="text-sm">{comment.content}</p>
                     <p className="text-xs text-gray-400">
-                      {comment.author} |{' '}
+                      {comment.author.username} |{' '}
                       {new Date(comment.createdAt).toLocaleString()}
                       {comment.isDeleted && canDelete && ' (삭제됨)'}
                     </p>
@@ -174,7 +175,7 @@ export default function CommentList({ dreamId }: Props) {
                   >
                     <p className="text-sm">{reply.content}</p>
                     <p className="text-xs text-gray-400">
-                      {reply.author} |{' '}
+                      {reply.author.username} |{' '}
                       {new Date(reply.createdAt).toLocaleString()}
                       {reply.isDeleted && canDelete && ' (삭제됨)'}
                     </p>

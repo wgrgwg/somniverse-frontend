@@ -1,7 +1,11 @@
 export interface Comment {
   id: number;
   content: string;
-  author: string;
+  author: {
+    id: number;
+    username: string;
+    email: string;
+  };
   createdAt: string;
   updatedAt?: string;
   isDeleted?: boolean;
