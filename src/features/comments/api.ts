@@ -1,5 +1,5 @@
 import api from '../../lib/axios';
-import type { Comment, Page } from './types';
+import type { Comment, CommentPayload, Page } from './types';
 
 export const getComments = async (
   dreamId: number,
@@ -34,6 +34,14 @@ export const createComment = async (
   });
   return res.data.data;
 };
+
+export async function updateComment(
+  id: number,
+  payload: CommentPayload,
+): Promise<Comment> {
+  const res = await api.put(`/comments/${id}`, payload);
+  return res.data.data;
+}
 
 export const deleteComment = async (commentId: number): Promise<void> => {
   await api.delete(`/comments/${commentId}`);

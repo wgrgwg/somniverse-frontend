@@ -19,3 +19,7 @@ export interface Page<T> {
   number: number;
   size: number;
 }
+
+export interface CommentPayload {
+  content: string;
+}

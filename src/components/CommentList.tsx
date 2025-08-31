@@ -9,6 +9,7 @@ import {
 import type { Comment } from '../features/comments/types';
 import Pagination from './ui/Pagination';
 import { useAuthContext } from '../features/auth/AuthContext';
+import CommentForm from './CommentForm';
 
 interface Props {
   dreamId: number;
@@ -32,6 +33,7 @@ export default function CommentList({ dreamId }: Props) {
   const [showReplyInput, setShowReplyInput] = useState<{
     [key: number]: boolean;
   }>({});
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
 
   const fetchComments = () => {
     setLoading(true);
@@ -40,6 +42,7 @@ export default function CommentList({ dreamId }: Props) {
         setComments(res.content);
         setTotalPages(res.totalPages);
 
+        // 각 댓글별 대댓글도 불러오기
         res.content.forEach((comment) => {
           fetchReplies(comment.id, true);
         });
@@ -69,21 +72,29 @@ export default function CommentList({ dreamId }: Props) {
     if (!replyContent[commentId]?.trim()) return;
 
     await createComment(dreamId, replyContent[commentId], commentId);
-
     setReplyContent((prev) => ({ ...prev, [commentId]: '' }));
     fetchReplies(commentId, true);
   };
 
-  const handleDelete = async (comment: Comment) => {
+  const handleDelete = async (comment: Comment, parentId?: number) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
 
-    if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
-      await deleteCommentByAdmin(comment.id);
-    } else {
-      await deleteComment(comment.id);
-    }
+    try {
+      if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
+        await deleteCommentByAdmin(comment.id);
+      } else {
+        await deleteComment(comment.id);
+      }
 
-    fetchComments();
+      if (parentId) {
+        fetchReplies(parentId, true);
+      } else {
+        fetchComments();
+      }
+    } catch (error) {
+      console.error(error);
+      alert('삭제 중 문제가 발생했습니다.');
+    }
   };
 
   useEffect(() => {
@@ -102,32 +113,64 @@ export default function CommentList({ dreamId }: Props) {
       ) : (
         <ul className="space-y-3">
           {comments.map((comment) => {
-            console.log(user?.username + ' = ' + comment.author.username);
+            const isAuthor = user?.id === comment.author.id;
             const canDelete =
-              user?.id === comment.author.id ||
-              user?.role === 'ADMIN' ||
-              user?.role === 'MANAGER';
+              (isAuthor ||
+                user?.role === 'ADMIN' ||
+                user?.role === 'MANAGER') &&
+              !comment.isDeleted;
             const canReply = user && !comment.isDeleted;
 
             return (
               <li key={comment.id} className="p-3 rounded bg-base-100 shadow">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm">{comment.content}</p>
-                    <p className="text-xs text-gray-400">
-                      {comment.author.username} |{' '}
-                      {new Date(comment.createdAt).toLocaleString()}
-                      {comment.isDeleted && canDelete && ' (삭제됨)'}
-                    </p>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    {editingCommentId === comment.id ? (
+                      <CommentForm
+                        dreamId={dreamId}
+                        onSuccess={() => {
+                          setEditingCommentId(null);
+                          fetchComments();
+                        }}
+                        mode="edit"
+                        commentId={comment.id}
+                        initialContent={comment.content}
+                      />
+                    ) : (
+                      <>
+                        <p className="text-sm">
+                          {comment.isDeleted
+                            ? '삭제된 댓글입니다.'
+                            : comment.content}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {comment.author.username} |{' '}
+                          {new Date(comment.createdAt).toLocaleString()}
+                        </p>
+                      </>
+                    )}
                   </div>
-                  {canDelete && (
-                    <button
-                      className="btn btn-sm btn-error"
-                      onClick={() => handleDelete(comment)}
-                    >
-                      삭제
-                    </button>
-                  )}
+
+                  <div className="flex gap-2">
+                    {isAuthor &&
+                      editingCommentId !== comment.id &&
+                      !comment.isDeleted && (
+                        <button
+                          className="btn btn-xs btn-info"
+                          onClick={() => setEditingCommentId(comment.id)}
+                        >
+                          수정
+                        </button>
+                      )}
+                    {canDelete && (
+                      <button
+                        className="btn btn-xs btn-error"
+                        onClick={() => handleDelete(comment)}
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {canReply && (
@@ -144,7 +187,6 @@ export default function CommentList({ dreamId }: Props) {
                   </button>
                 )}
 
-                {/* 대댓글 입력창 */}
                 {showReplyInput[comment.id] && canReply && (
                   <div className="mt-2 flex gap-2">
                     <input
@@ -168,19 +210,69 @@ export default function CommentList({ dreamId }: Props) {
                   </div>
                 )}
 
-                {replies[comment.id]?.map((reply) => (
-                  <div
-                    key={reply.id}
-                    className="ml-6 mt-2 p-2 border-l border-gray-300"
-                  >
-                    <p className="text-sm">{reply.content}</p>
-                    <p className="text-xs text-gray-400">
-                      {reply.author.username} |{' '}
-                      {new Date(reply.createdAt).toLocaleString()}
-                      {reply.isDeleted && canDelete && ' (삭제됨)'}
-                    </p>
-                  </div>
-                ))}
+                {replies[comment.id]?.map((reply) => {
+                  const isReplyAuthor = user?.id === reply.author.id;
+                  const canDeleteReply =
+                    (isReplyAuthor ||
+                      user?.role === 'ADMIN' ||
+                      user?.role === 'MANAGER') &&
+                    !reply.isDeleted;
+
+                  return (
+                    <div
+                      key={reply.id}
+                      className="ml-6 mt-2 p-2 border-l border-gray-300 flex justify-between items-start"
+                    >
+                      <div className="flex-1">
+                        {editingCommentId === reply.id ? (
+                          <CommentForm
+                            dreamId={dreamId}
+                            onSuccess={() => {
+                              setEditingCommentId(null);
+                              fetchReplies(comment.id, true);
+                            }}
+                            mode="edit"
+                            commentId={reply.id}
+                            initialContent={reply.content}
+                          />
+                        ) : (
+                          <>
+                            <p className="text-sm">
+                              {reply.isDeleted
+                                ? '삭제된 댓글입니다.'
+                                : reply.content}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {reply.author.username} |{' '}
+                              {new Date(reply.createdAt).toLocaleString()}
+                            </p>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        {isReplyAuthor &&
+                          editingCommentId !== reply.id &&
+                          !reply.isDeleted && (
+                            <button
+                              className="btn btn-xs btn-info"
+                              onClick={() => setEditingCommentId(reply.id)}
+                            >
+                              수정
+                            </button>
+                          )}
+                        {canDeleteReply && (
+                          <button
+                            className="btn btn-xs btn-error"
+                            onClick={() => handleDelete(reply, comment.id)}
+                          >
+                            삭제
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
 
                 {replyTotal[comment.id] >
                   (replies[comment.id]?.length || 0) && (

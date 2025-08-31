@@ -1,18 +1,32 @@
-import { useState } from 'react';
-import { createComment } from '../features/comments/api';
+import { useEffect, useState } from 'react';
+import { createComment, updateComment } from '../features/comments/api';
 import { useAuthContext } from '../features/auth/AuthContext';
 
 interface Props {
   dreamId: number;
   onSuccess: () => void;
   parentId?: number;
+  mode?: 'create' | 'edit';
+  commentId?: number;
+  initialContent?: string;
 }
 
-export default function CommentForm({ dreamId, onSuccess, parentId }: Props) {
+export default function CommentForm({
+  dreamId,
+  onSuccess,
+  parentId,
+  mode = 'create',
+  commentId,
+  initialContent = '',
+}: Props) {
   const { user } = useAuthContext();
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(initialContent);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setContent(initialContent);
+  }, [initialContent]);
 
   if (!user) {
     return (
@@ -27,11 +41,21 @@ export default function CommentForm({ dreamId, onSuccess, parentId }: Props) {
     try {
       setLoading(true);
       setError(null);
-      await createComment(dreamId, content);
-      setContent('');
+
+      if (mode === 'create') {
+        await createComment(dreamId, content, parentId);
+        setContent('');
+      } else if (mode === 'edit' && commentId) {
+        await updateComment(commentId, { content });
+      }
+
       onSuccess();
     } catch {
-      setError('댓글 작성에 실패했습니다.');
+      setError(
+        mode === 'create'
+          ? '댓글 작성에 실패했습니다.'
+          : '댓글 수정에 실패했습니다.',
+      );
     } finally {
       setLoading(false);
     }
@@ -51,7 +75,13 @@ export default function CommentForm({ dreamId, onSuccess, parentId }: Props) {
         className="btn btn-primary btn-sm"
         disabled={loading || !content.trim()}
       >
-        {loading ? '작성 중...' : '작성'}
+        {loading
+          ? mode === 'create'
+            ? '작성 중...'
+            : '수정 중...'
+          : mode === 'create'
+            ? '작성'
+            : '수정'}
       </button>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </form>
