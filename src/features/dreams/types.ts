@@ -9,9 +9,10 @@ export interface Dream {
     username: string;
     email: string;
   };
-  deleted?: boolean;
-  createdAt?: string;
+  isDeleted: boolean;
+  createdAt: string;
   updatedAt?: string;
+  authorUsername?: string;
 }
 
 export interface DreamPayload {

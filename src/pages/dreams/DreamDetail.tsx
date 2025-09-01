@@ -69,6 +69,15 @@ export default function DreamDetail() {
       <p className="text-gray-500 text-sm">{dream.createdAt?.slice(0, 10)}</p>
 
       <p className="mt-4">꿈 일자 : {dream.dreamDate}</p>
+      <span
+        className={`badge ${
+          dream.isPublic ? 'badge-success' : 'badge-warning'
+        }`}
+      >
+        {dream.isPublic ? '공개' : '비공개'}
+      </span>
+
+      {dream.isDeleted && <span className="badge badge-error">삭제됨</span>}
       <p className="mt-4">{dream.content}</p>
 
       {(isAuthor || isAdminOrManager) && (
@@ -81,7 +90,11 @@ export default function DreamDetail() {
               수정
             </Link>
           )}
-          <button onClick={handleDelete} className="btn btn-error btn-sm">
+          <button
+            onClick={handleDelete}
+            className="btn btn-error btn-sm"
+            disabled={dream.isDeleted}
+          >
             삭제
           </button>
         </div>

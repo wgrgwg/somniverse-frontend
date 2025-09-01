@@ -50,9 +50,11 @@ export default function MyDreams() {
                 to={`/dreams/${dream.id}`}
                 className="text-xl font-semibold"
               >
-                {dream.title}
+                [{dream.dreamDate}] {dream.title}
               </Link>
-              <p className="text-sm text-gray-500">{dream.dreamDate}</p>
+              <p className="text-sm text-gray-500">
+                {dream.createdAt.slice(0, 10)} | {dream.authorUsername}
+              </p>
             </li>
           ))}
         </ul>
