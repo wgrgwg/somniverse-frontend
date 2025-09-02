@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { deleteDreamByAdmin, getAdminDreams } from '../../features/dreams/api';
+import { getDreamsForAdmin } from '../../features/dreams/api';
 import type { Dream } from '../../features/dreams/types';
 import Pagination from '../../components/ui/Pagination';
 import { Link } from 'react-router-dom';
@@ -9,10 +9,11 @@ export default function AdminDreams() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [includeDeleted, setIncludeDeleted] = useState(false);
 
   const fetchDreams = () => {
     setLoading(true);
-    getAdminDreams(page, 10)
+    getDreamsForAdmin(page, 10, includeDeleted)
       .then((res) => {
         setDreams(res.content);
         setTotalPages(res.totalPages);
@@ -22,18 +23,26 @@ export default function AdminDreams() {
 
   useEffect(() => {
     fetchDreams();
-  }, [page]);
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm('정말 삭제하시겠습니까?')) {
-      await deleteDreamByAdmin(id);
-      fetchDreams();
-    }
-  };
+  }, [page, includeDeleted]);
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">관리자 꿈 관리</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">관리자 꿈 목록</h1>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            className="checkbox checkbox-sm"
+            checked={includeDeleted}
+            onChange={(e) => {
+              setPage(0);
+              setIncludeDeleted(e.target.checked);
+            }}
+          />
+          <span className="text-sm">삭제된 꿈 포함</span>
+        </label>
+      </div>
+
       {loading ? (
         <div className="flex justify-center items-center">
           <span className="loading loading-spinner loading-lg"></span>
@@ -43,34 +52,26 @@ export default function AdminDreams() {
       ) : (
         <ul className="space-y-4">
           {dreams.map((dream) => (
-            <li
-              key={dream.id}
-              className="card bg-base-100 shadow-md p-4 flex justify-between items-center"
-            >
+            <li key={dream.id} className="card bg-base-100 shadow-md p-4">
               <Link
-                to={`/dreams/${dream.id}`}
-                className="text-xl font-semibold"
+                to={`/admin/dreams/${dream.id}?includeDeleted=${includeDeleted}`}
+                className="text-xl font-semibold hover:underline"
               >
-                {dream.title}
+                [{dream.dreamDate}] {dream.title}
               </Link>
-              <div className="space-x-2">
-                <Link
-                  to={`/dreams/${dream.id}/edit`}
-                  className="btn btn-sm btn-primary"
-                >
-                  수정
-                </Link>
-                <button
-                  className="btn btn-sm btn-error"
-                  onClick={() => handleDelete(dream.id)}
-                >
-                  삭제
-                </button>
-              </div>
+              <p className="text-sm text-gray-500">
+                {dream.createdAt.slice(0, 10)} | {dream.authorUsername}
+                {dream.isDeleted && (
+                  <span className="ml-2 text-red-500 font-semibold">
+                    (삭제됨)
+                  </span>
+                )}
+              </p>
             </li>
           ))}
         </ul>
       )}
+
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
