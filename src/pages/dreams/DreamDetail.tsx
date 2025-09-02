@@ -56,32 +56,58 @@ export default function DreamDetail() {
   }
 
   if (!dream) {
-    return <p>해당 꿈을 찾을 수 없습니다.</p>;
+    return <p className="text-base-content">해당 꿈을 찾을 수 없습니다.</p>;
   }
 
   const isAuthor = user?.id === dream.author.id;
   const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold">{dream.title}</h1>
-      <p className="text-gray-500">{dream.author.username}</p>
-      <p className="text-gray-500 text-sm">{dream.createdAt?.slice(0, 10)}</p>
+    <div className="max-w-3xl mx-auto p-6 space-y-6">
+      <h1 className="text-3xl font-bold text-base-content">{dream.title}</h1>
 
-      <p className="mt-4">꿈 일자 : {dream.dreamDate}</p>
-      <span
-        className={`badge ${
-          dream.isPublic ? 'badge-success' : 'badge-warning'
-        }`}
-      >
-        {dream.isPublic ? '공개' : '비공개'}
-      </span>
+      <div className="card bg-base-100 shadow-md border border-base-300 p-4">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-base-content">
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">작성자:</span>
+            <span className="text-base-content">{dream.author.username}</span>
+          </div>
 
-      {dream.isDeleted && <span className="badge badge-error">삭제됨</span>}
-      <p className="mt-4">{dream.content}</p>
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">작성일:</span>
+            <span className="text-base-content">
+              {dream.createdAt?.slice(0, 10)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">꿈 일자:</span>
+            <span className="text-base-content">{dream.dreamDate}</span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">공개 여부:</span>
+            <span
+              className={`badge ${
+                dream.isPublic ? 'badge-success' : 'badge-warning'
+              }`}
+            >
+              {dream.isPublic ? '공개' : '비공개'}
+            </span>
+          </div>
+
+          {dream.isDeleted && (
+            <span className="badge badge-error ml-auto">삭제됨</span>
+          )}
+        </div>
+      </div>
+
+      <div className="prose max-w-none text-base-content">
+        <p className="whitespace-pre-wrap">{dream.content}</p>
+      </div>
 
       {(isAuthor || isAdminOrManager) && (
-        <div className="mt-6 flex gap-2">
+        <div className="flex gap-2 mt-6">
           {isAuthor && (
             <Link
               to={`/dreams/${dream.id}/edit`}

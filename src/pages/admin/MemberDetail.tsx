@@ -98,7 +98,6 @@ export default function MemberDetail() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Breadcrumb */}
       <div className="breadcrumbs text-sm mb-4">
         <ul>
           <li>
@@ -111,76 +110,64 @@ export default function MemberDetail() {
         </ul>
       </div>
 
-      <div className="card bg-base-100 shadow">
+      <div className="card bg-base-100 shadow-md border border-base-300">
         <div className="card-body">
-          <div className="flex items-center justify-between">
-            <h2 className="card-title">회원 상세</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="card-title text-base-content">회원 상세</h2>
             <Link to="/admin/members" className="btn btn-ghost btn-sm">
               목록으로
             </Link>
           </div>
 
-          {notice && <div className="alert alert-success mb-2">{notice}</div>}
+          {notice && <div className="alert alert-success mb-3">{notice}</div>}
+          {error && <div className="alert alert-error mb-3">{error}</div>}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">ID</span>
-              </label>
-              <input
-                className="input input-bordered"
-                value={member.id}
-                readOnly
-              />
+          <div className="space-y-4">
+            {/* ID */}
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="label-text text-base-content font-semibold w-28 shrink-0">
+                ID
+              </span>
+              <p className="text-base-content/70">{member.id}</p>
             </div>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">사용자명</span>
-              </label>
-              <input
-                className="input input-bordered"
-                value={member.username}
-                readOnly
-              />
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="label-text text-base-content font-semibold w-28 shrink-0">
+                사용자명
+              </span>
+              <p className="text-base-content/70">{member.username}</p>
             </div>
 
-            <div className="form-control md:col-span-2">
-              <label className="label">
-                <span className="label-text">이메일</span>
-              </label>
-              <input
-                className="input input-bordered"
-                value={member.email ?? ''}
-                readOnly
-              />
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="label-text text-base-content font-semibold w-28 shrink-0">
+                이메일
+              </span>
+              <p className="text-base-content/70">{member.email ?? '-'}</p>
             </div>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">생성일</span>
-              </label>
-              <input
-                className="input input-bordered"
-                value={
-                  member.createdAt
-                    ? new Date(member.createdAt).toLocaleString()
-                    : '-'
-                }
-                readOnly
-              />
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="label-text text-base-content font-semibold w-28 shrink-0">
+                생성일
+              </span>
+              <p className="text-base-content/70">
+                {member.createdAt
+                  ? new Date(member.createdAt).toLocaleString()
+                  : '-'}
+              </p>
             </div>
           </div>
 
-          {/* 권한 변경 */}
-          <div className="divider" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div className="divider my-6" />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
             <div className="form-control md:col-span-2">
-              <label className="label">
-                <span className="label-text">권한(Role)</span>
+              <label className="label pb-1">
+                <span className="label-text text-base-content font-semibold">
+                  권한(Role)
+                </span>
               </label>
               <select
-                className="select select-bordered"
+                className="select select-bordered select-sm ml-2"
                 value={roleDraft}
                 onChange={(e) => setRoleDraft(e.target.value as Role)}
                 disabled={saving || isSelf}
@@ -189,7 +176,7 @@ export default function MemberDetail() {
                 <option value="MANAGER">MANAGER</option>
               </select>
               {isSelf && (
-                <label className="label">
+                <label className="label mt-1">
                   <span className="label-text-alt text-warning">
                     자기 자신의 권한 변경은 허용되지 않습니다.
                   </span>
@@ -198,7 +185,7 @@ export default function MemberDetail() {
             </div>
 
             <button
-              className="btn btn-primary"
+              className="btn btn-primary btn-sm mt-6 md:mt-0"
               onClick={handleRoleSave}
               disabled={saving || isSelf || roleDraft === member?.role}
             >

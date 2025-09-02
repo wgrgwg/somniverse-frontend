@@ -175,7 +175,7 @@ export default function CommentList({ dreamId }: Props) {
 
                 {canReply && (
                   <button
-                    className="ml-0 mt-2 text-blue-500 text-sm"
+                    className="ml-0 mt-2 text-blue-500 text-sm btn btn-xs"
                     onClick={() =>
                       setShowReplyInput((prev) => ({
                         ...prev,
