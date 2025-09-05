@@ -4,10 +4,12 @@ export interface Comment {
   author: {
     id: number;
     username: string;
-    email?: string;
+    email: string;
   };
   createdAt: string;
   updatedAt?: string;
+  isDeleted?: boolean;
+  totalChildrenCount?: number;
 }
 
 export interface Page<T> {
@@ -16,4 +18,8 @@ export interface Page<T> {
   totalPages: number;
   number: number;
   size: number;
+}
+
+export interface CommentPayload {
+  content: string;
 }

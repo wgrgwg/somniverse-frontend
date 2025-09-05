@@ -3,22 +3,23 @@ export interface Dream {
   title: string;
   content: string;
   dreamDate: string;
-  public?: boolean;
-  author?: {
+  isPublic: boolean;
+  author: {
     id: number;
     username: string;
-    email?: string;
+    email: string;
   };
-  deleted?: boolean;
-  createdAt?: string;
+  isDeleted: boolean;
+  createdAt: string;
   updatedAt?: string;
+  authorUsername?: string;
 }
 
 export interface DreamPayload {
   title: string;
   content: string;
   dreamDate: string;
-  public?: boolean;
+  isPublic: boolean;
 }
 
 export interface Page<T> {

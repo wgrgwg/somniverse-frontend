@@ -36,11 +36,24 @@ export async function deleteDream(id: number): Promise<void> {
   await api.delete(`/dreams/${id}`);
 }
 
-export async function getAdminDreams(
+export async function getDreamsForAdmin(
   page = 0,
   size = 10,
+  includeDeleted = false,
 ): Promise<Page<Dream>> {
-  const res = await api.get('/admin/dreams', { params: { page, size } });
+  const res = await api.get('/admin/dreams', {
+    params: { page, size, includeDeleted },
+  });
+  return res.data.data;
+}
+
+export async function getDreamAsAdminById(
+  id: number,
+  includeDeleted = false,
+): Promise<Dream> {
+  const res = await api.get(`/admin/dreams/${id}`, {
+    params: { includeDeleted },
+  });
   return res.data.data;
 }
 

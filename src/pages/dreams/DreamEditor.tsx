@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../lib/axios.ts';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { createDream, updateDream } from '../../features/dreams/api.ts';
+import type { DreamPayload } from '../../features/dreams/types.ts';
 
 export default function DreamEditor({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams();
@@ -20,7 +22,7 @@ export default function DreamEditor({ mode }: { mode: 'create' | 'edit' }) {
     queryKey: ['dream', id],
     queryFn: async () => {
       const { data } = await api.get(`/dreams/${id}`);
-      return data;
+      return data.data;
     },
   });
 
@@ -34,19 +36,11 @@ export default function DreamEditor({ mode }: { mode: 'create' | 'edit' }) {
   }, [data, mode]);
 
   const mutate = useMutation({
-    mutationFn: (input: any) =>
-      mode === 'create'
-        ? api.post('/dreams', input).then((res) => res.data)
-        : api.put(`/dreams/${id}`, input).then((res) => res.data),
+    mutationFn: (input: DreamPayload) =>
+      mode === 'create' ? createDream(input) : updateDream(Number(id), input),
     onSuccess: (d) => {
       qc.invalidateQueries({ queryKey: ['myDreams'] });
-
-      const dreamId = d?.id ?? d?.data?.id;
-      if (dreamId) {
-        nav(`/dreams/${dreamId}`);
-      } else {
-        nav('/dreams');
-      }
+      nav(`/dreams/${d.id}`);
     },
   });
 

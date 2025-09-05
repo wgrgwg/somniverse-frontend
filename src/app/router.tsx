@@ -1,7 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Root from './Root';
 import Home from '../pages/Home';
-import Dreams from '../pages/dreams/Dreams';
 import Login from '../pages/auth/Login';
 import Signup from '../pages/auth/Signup';
 import OAuthCallback from '../pages/auth/OAuthCallback';
@@ -13,6 +12,8 @@ import AdminDreams from '../pages/admin/AdminDreams';
 import Members from '../pages/admin/Members';
 import MemberDetail from '../pages/admin/MemberDetail';
 import Protected from '../components/Protected';
+import AdminDreamDetail from '../pages/admin/AdminDreamDetail';
+import Dreams from '../pages/dreams/Dreams.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -20,7 +21,6 @@ export const router = createBrowserRouter([
     element: <Root />,
     children: [
       { index: true, element: <Home /> },
-      { path: 'dreams', element: <Dreams /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
       { path: 'auth/callback', element: <OAuthCallback /> },
@@ -29,6 +29,7 @@ export const router = createBrowserRouter([
         element: <Protected />,
         children: [
           { path: 'me', element: <Profile /> },
+          { path: 'dreams', element: <Dreams /> },
           { path: 'dreams/me', element: <MyDreams /> },
           { path: 'dreams/new', element: <DreamEditor mode="create" /> },
           { path: 'dreams/:id', element: <DreamDetail /> },
@@ -38,7 +39,10 @@ export const router = createBrowserRouter([
 
       {
         element: <Protected role="MANAGER" />,
-        children: [{ path: 'admin/dreams', element: <AdminDreams /> }],
+        children: [
+          { path: 'admin/dreams', element: <AdminDreams /> },
+          { path: 'admin/dreams/:id', element: <AdminDreamDetail /> },
+        ],
       },
 
       {
