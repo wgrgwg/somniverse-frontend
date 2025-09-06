@@ -1,5 +1,6 @@
 import api, { setAccessToken } from '../../lib/axios';
 import type { LoginPayload, LoginResponse } from './types';
+import { queryClient } from '../../app/queryClient.ts';
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const res = await api.post<LoginResponse>('/auth/tokens', payload);
@@ -15,6 +16,7 @@ export async function logout(): Promise<void> {
     await api.delete('/auth/tokens');
   } finally {
     setAccessToken(null);
+    queryClient.clear();
   }
 }
 
