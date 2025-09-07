@@ -9,7 +9,7 @@ export default function OAuthButtons() {
     window.location.href = url;
   };
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 justify-center">
       <button
         type="button"
         className="btn btn-outline"

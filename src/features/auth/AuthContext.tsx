@@ -10,6 +10,7 @@ import { isTokenExpired, parseJwt } from '../../lib/jwt';
 import { login as apiLogin, logout as apiLogout, refresh } from './api';
 import { eventBus } from '../../lib/eventBus';
 import type { LoginPayload, LoginResponse, Member } from './types';
+import axios from 'axios';
 
 type AuthState = {
   user: Member | null;
@@ -70,12 +71,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [memberFromToken]);
 
   const login = useCallback(
-    async (payload: LoginPayload) => {
-      const res: LoginResponse = await apiLogin(payload);
-      const token = res.data?.accessToken ?? null;
-      const member =
-        res.data?.member ?? (token ? memberFromToken(token) : null);
-      setUser(member);
+    async (payload: LoginPayload): Promise<void> => {
+      try {
+        const res: LoginResponse = await apiLogin(payload);
+        const token = res.data?.accessToken ?? null;
+        const member =
+          res.data?.member ?? (token ? memberFromToken(token) : null);
+
+        setUser(member);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const msg = error.response?.data?.message ?? '로그인에 실패했습니다.';
+          throw new Error(msg);
+        }
+        throw error;
+      }
     },
     [memberFromToken],
   );

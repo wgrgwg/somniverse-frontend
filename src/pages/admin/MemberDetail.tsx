@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Member } from '../../features/members/api';
-import { getMember, updateRole } from '../../features/members/api';
+import { getMemberForAdmin, updateRole } from '../../features/members/api';
 import type { Role } from '../../static/roles';
 import { useAuthContext } from '../../features/auth/AuthContext';
 
@@ -29,7 +29,7 @@ export default function MemberDetail() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getMember(memberId);
+      const data = await getMemberForAdmin(memberId);
       setMember(data);
       setRoleDraft(data.role);
     } catch {
@@ -172,8 +172,8 @@ export default function MemberDetail() {
                 onChange={(e) => setRoleDraft(e.target.value as Role)}
                 disabled={saving || isSelf}
               >
-                <option value="USER">USER</option>
-                <option value="MANAGER">MANAGER</option>
+                <option value="USER">사용자</option>
+                <option value="MANAGER">관리자</option>
               </select>
               {isSelf && (
                 <label className="label mt-1">

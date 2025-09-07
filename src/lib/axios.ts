@@ -9,6 +9,8 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const loginUrl = '/auth/tokens';
+
 let accessToken: string | null = localStorage.getItem('accessToken');
 
 export const getAccessToken = () => accessToken;
@@ -54,7 +56,7 @@ api.interceptors.response.use(
     };
     const status = error.response?.status;
 
-    if (status === 401 && !original._retry) {
+    if (status === 401 && !original._retry && original.url !== loginUrl) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           waiters.push((t) => {
