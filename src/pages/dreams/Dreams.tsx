@@ -10,31 +10,47 @@ export default function Dreams() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sort, setSort] = useState<string>('createdAt,desc');
   const nav = useNavigate();
   const { user } = useAuthContext();
 
   useEffect(() => {
     setLoading(true);
-    getPublicDreams(page, 5)
+    getPublicDreams(page, 5, sort)
       .then((res) => {
         setDreams(res.content);
         setTotalPages(res.totalPages);
       })
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, sort]);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">공개 꿈 목록</h1>
-        {user && (
-          <button
-            className="btn btn-primary"
-            onClick={() => nav('/dreams/new')}
+        <div className="flex items-center gap-4">
+          {user && (
+            <button
+              className="btn btn-primary"
+              onClick={() => nav('/dreams/new')}
+            >
+              + 꿈일기 작성
+            </button>
+          )}
+          <select
+            className="select select-bordered"
+            value={sort}
+            onChange={(e) => {
+              setPage(0);
+              setSort(e.target.value);
+            }}
           >
-            + 꿈일기 작성
-          </button>
-        )}
+            <option value="createdAt,desc">최신 등록순</option>
+            <option value="createdAt,asc">오래된 등록순</option>
+            <option value="dreamDate,desc">꿈 날짜 최신순</option>
+            <option value="dreamDate,asc">꿈 날짜 오래된순</option>
+          </select>
+        </div>
       </div>
 
       {loading ? (

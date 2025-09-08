@@ -4,13 +4,18 @@ import type { Dream, DreamPayload, Page } from './types';
 export async function getPublicDreams(
   page = 0,
   size = 10,
+  sort: string = 'createdAt,desc',
 ): Promise<Page<Dream>> {
-  const res = await api.get('/dreams', { params: { page, size } });
+  const res = await api.get('/dreams', { params: { page, size, sort } });
   return res.data.data;
 }
 
-export async function getMyDreams(page = 0, size = 10): Promise<Page<Dream>> {
-  const res = await api.get('/dreams/me', { params: { page, size } });
+export async function getMyDreams(
+  page = 0,
+  size = 10,
+  sort: string = 'createdAt,desc',
+): Promise<Page<Dream>> {
+  const res = await api.get('/dreams/me', { params: { page, size, sort } });
   return res.data.data;
 }
 
@@ -40,9 +45,10 @@ export async function getDreamsForAdmin(
   page = 0,
   size = 10,
   includeDeleted = false,
+  sort = 'createdAt,desc',
 ): Promise<Page<Dream>> {
   const res = await api.get('/admin/dreams', {
-    params: { page, size, includeDeleted },
+    params: { page, size, includeDeleted, sort },
   });
   return res.data.data;
 }
