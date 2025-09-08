@@ -7,22 +7,49 @@ import { Link } from 'react-router-dom';
 
 export default function Members() {
   const [page, setPage] = useState(0);
+  const [keyword, setKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState('');
+
   const { data, isLoading } = useQuery({
-    queryKey: ['members', page],
-    queryFn: () => listMembers({ page, size: PAGE_SIZE }),
+    queryKey: ['members', page, searchKeyword],
+    queryFn: () =>
+      listMembers({ page, size: PAGE_SIZE, keyword: searchKeyword }),
   });
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setPage(0);
+    setSearchKeyword(keyword);
+  };
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">회원 관리</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-semibold">회원 관리</h1>
+
+        <div className="flex items-center gap-4">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <input
+              type="text"
+              placeholder="이메일 또는 닉네임"
+              className="input input-bordered w-full max-w-xs"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            <button type="submit" className="btn btn-primary">
+              검색
+            </button>
+          </form>
+        </div>
+      </div>
+
       {isLoading ? (
-        <div className="skeleton h-24 w-full" />
+        <div className="skeleton h-64 w-full" />
       ) : (
         <div className="overflow-x-auto">
           <table className="table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Email</th>
                 <th>닉네임</th>
                 <th>권한</th>
@@ -33,7 +60,6 @@ export default function Members() {
             <tbody>
               {data?.content.map((m) => (
                 <tr key={m.id}>
-                  <td>{m.id}</td>
                   <td>{m.email}</td>
                   <td>{m.username}</td>
                   <td>{m.role}</td>
