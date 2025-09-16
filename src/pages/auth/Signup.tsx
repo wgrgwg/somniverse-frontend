@@ -8,12 +8,19 @@ export default function Signup() {
   const nav = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (password !== passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
     try {
       await api.post('/auth/members', { email, password, username });
       nav('/login');
@@ -43,6 +50,7 @@ export default function Signup() {
             placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
 
           <input
@@ -50,6 +58,7 @@ export default function Signup() {
             placeholder="닉네임"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            required
           />
 
           <input
@@ -58,6 +67,16 @@ export default function Signup() {
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <input
+            type="password"
+            className="input input-bordered w-full"
+            placeholder="비밀번호 확인"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+            required
           />
 
           <button className="btn btn-primary w-full" type="submit">
