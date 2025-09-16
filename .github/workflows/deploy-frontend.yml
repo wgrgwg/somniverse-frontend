@@ -1,0 +1,85 @@
+name: Deploy Frontend (prod)
+
+on:
+  workflow_dispatch: { }
+  push:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'yarn.lock'
+      - 'vite.config.*'
+      - 'next.config.*'
+      - 'public/**'
+      - 'src/**'
+
+concurrency:
+  group: somniverse-prod-frontend
+  cancel-in-progress: false
+
+env:
+  REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
+  REMOTE_USER: ${{ secrets.DEPLOY_USER }}
+  REMOTE_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
+  REMOTE_DIR: /srv/somniverse
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://somniverse.kro.kr
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Archive build
+        run: |
+          tar -C dist -czf dist.tgz .
+
+      - name: Prepare SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ env.REMOTE_PORT || 22 }}" -H "${{ env.REMOTE_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload artifact
+        run: |
+          scp -P "${{ env.REMOTE_PORT || 22 }}" dist.tgz \
+            "${{ env.REMOTE_USER }}"@"${{ env.REMOTE_HOST }}":"${{ env.REMOTE_DIR }}/releases/frontend-dist.tgz"
+
+      - name: Backup & swap build on server
+        run: |
+          ssh -p "${{ env.REMOTE_PORT || 22 }}" "${{ env.REMOTE_USER }}"@"${{ env.REMOTE_HOST }}" << 'EOF'
+          set -euo pipefail
+          mkdir -p /srv/somniverse/releases
+          mkdir -p /srv/somniverse/frontend/dist
+          ts=$(date +%Y%m%d%H%M%S)
+
+          if [ -d /srv/somniverse/frontend/dist ]; then
+            tar -C /srv/somniverse/frontend -czf "/srv/somniverse/releases/frontend-$ts.tgz" dist || true
+          fi
+
+          rm -rf /srv/somniverse/frontend/dist/*
+          tar -C /srv/somniverse/frontend/dist -xzf /srv/somniverse/releases/frontend-dist.tgz
+          rm -f /srv/somniverse/releases/frontend-dist.tgz
+          EOF
+
+      - name: Smoke test over HTTPS
+        run: |
+          curl -fsS "https://somniverse.kro.kr/" | head -c 1000 >/dev/null
