@@ -43,6 +43,13 @@ jobs:
 
       - name: Install deps
         run: npm ci
+        
+      - name: Create env file
+        run: |
+          echo "VITE_APP_URL=${{ secrets.VITE_APP_URL }}" >> .env.production
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env.production
+          echo "VITE_OAUTH2_PATH=${{ secrets.VITE_OAUTH2_PATH }}" >> .env.production
+          echo "VITE_OAUTH2_PROVIDERS=${{ secrets.VITE_OAUTH2_PROVIDERS }}" >> .env.production
 
       - name: Build
         run: npm run build
