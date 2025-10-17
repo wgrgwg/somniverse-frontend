@@ -24,8 +24,13 @@ export async function getDreamById(id: number): Promise<Dream> {
   return res.data.data;
 }
 
-export async function createDream(payload: DreamPayload): Promise<Dream> {
-  const res = await api.post('/dreams', payload);
+export async function createDream(
+  payload: DreamPayload,
+  attemptKey?: string,
+): Promise<Dream> {
+  const res = await api.post('/dreams', payload, {
+    headers: attemptKey ? { 'Idempotency-Key': attemptKey } : undefined,
+  });
   return res.data.data;
 }
 
