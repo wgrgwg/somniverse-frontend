@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createComment, updateComment } from '../features/comments/api';
 import { useAuthContext } from '../features/auth/AuthContext';
 
@@ -24,6 +24,19 @@ export default function CommentForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const attemptKeyRef = useRef<string | null>(null);
+  const ensureAttemptKey = () => {
+    if (!attemptKeyRef.current) {
+      attemptKeyRef.current =
+        globalThis.crypto?.randomUUID?.() ??
+        `idem-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+    }
+    return attemptKeyRef.current;
+  };
+  const endAttempt = () => {
+    attemptKeyRef.current = null;
+  };
+
   useEffect(() => {
     setContent(initialContent);
   }, [initialContent]);
@@ -36,21 +49,27 @@ export default function CommentForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim() || loading) return;
 
     try {
       setLoading(true);
       setError(null);
 
       if (mode === 'create') {
-        await createComment(dreamId, content, parentId);
+        const key = ensureAttemptKey();
+        await createComment(dreamId, content.trim(), parentId, key);
         setContent('');
+        endAttempt();
       } else if (mode === 'edit' && commentId) {
-        await updateComment(commentId, { content });
+        await updateComment(commentId, { content: content.trim() });
       }
 
       onSuccess();
-    } catch {
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status && status >= 400 && status < 500) {
+        endAttempt();
+      }
       setError(
         mode === 'create'
           ? '댓글 작성에 실패했습니다.'
@@ -60,6 +79,9 @@ export default function CommentForm({
       setLoading(false);
     }
   };
+
+  const idleLabel = mode === 'create' ? '작성' : '수정';
+  const submittingLabel = mode === 'create' ? '작성중…' : '수정중…';
 
   return (
     <form onSubmit={handleSubmit} className="mt-2 flex gap-2">
@@ -75,13 +97,7 @@ export default function CommentForm({
         className="btn btn-primary btn-sm"
         disabled={loading || !content.trim()}
       >
-        {loading
-          ? mode === 'create'
-            ? '작성 중...'
-            : '수정 중...'
-          : mode === 'create'
-            ? '작성'
-            : '수정'}
+        {loading ? submittingLabel : idleLabel}
       </button>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </form>
