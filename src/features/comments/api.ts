@@ -27,11 +27,13 @@ export const createComment = async (
   dreamId: number,
   content: string,
   parentId?: number,
+  attemptKey?: string,
 ): Promise<Comment> => {
-  const res = await api.post(`/dreams/${dreamId}/comments`, {
-    content,
-    parentId,
-  });
+  const res = await api.post(
+    `/dreams/${dreamId}/comments`,
+    { content, parentId },
+    { headers: attemptKey ? { 'Idempotency-Key': attemptKey } : undefined },
+  );
   return res.data.data;
 };
 
