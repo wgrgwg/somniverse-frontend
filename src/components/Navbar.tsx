@@ -6,8 +6,15 @@ export default function Navbar() {
   const { user, logout } = useAuthContext();
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/');
+    const result = await logout();
+
+    if (result === 'expired') {
+      alert('세션이 만료되어 로그아웃 처리되었습니다.');
+    } else {
+      alert('로그아웃되었습니다.');
+    }
+
+    navigate('/login', { replace: true });
   };
 
   return (

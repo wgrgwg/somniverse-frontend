@@ -1,6 +1,9 @@
-import api, { setAccessToken } from '../../lib/axios';
+import api, { getAccessToken, setAccessToken } from '../../lib/axios';
 import type { LoginPayload, LoginResponse } from './types';
 import { queryClient } from '../../app/queryClient.ts';
+import { isTokenExpired } from '../../lib/jwt.ts';
+
+export type LogoutResult = 'ok' | 'expired';
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const res = await api.post<LoginResponse>('/auth/tokens', payload);
@@ -11,9 +14,17 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return res.data;
 }
 
-export async function logout(): Promise<void> {
+export async function logout(): Promise<LogoutResult> {
   try {
+    const token = getAccessToken();
+    if (!token || isTokenExpired(token)) {
+      const newToken = await refresh();
+      if (!newToken) {
+        return 'expired';
+      }
+    }
     await api.delete('/auth/tokens');
+    return 'ok';
   } finally {
     setAccessToken(null);
     queryClient.clear();
