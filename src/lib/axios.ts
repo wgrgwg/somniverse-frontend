@@ -50,12 +50,14 @@ function deleteHeader(config: InternalAxiosRequestConfig, name: string): void {
   ensureHeaders(config).delete(name);
 }
 
-const isRefreshEndpoint = (
+const isAuthTokensUrl = (
   config: InternalAxiosRequestConfig | undefined,
 ): boolean => (config?.url ?? '').startsWith(LOGIN_URL);
 
 api.interceptors.request.use((config) => {
-  if (isRefreshEndpoint(config)) {
+  const method = (config.method ?? 'get').toUpperCase();
+
+  if (isAuthTokensUrl(config) && (method === 'POST' || method === 'PUT')) {
     deleteHeader(config, AUTH_HEADER);
     return config;
   }
@@ -99,7 +101,7 @@ api.interceptors.response.use(
       !original ||
       status !== 401 ||
       original._retry ||
-      isRefreshEndpoint(original)
+      isAuthTokensUrl(original)
     ) {
       return Promise.reject(error);
     }

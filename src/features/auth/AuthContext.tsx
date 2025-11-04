@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 import { isTokenExpired, parseJwt } from '../../lib/jwt';
+import type { LogoutResult } from './api';
 import { login as apiLogin, logout as apiLogout, refresh } from './api';
 import { eventBus } from '../../lib/eventBus';
 import type { LoginPayload, LoginResponse, Member } from './types';
@@ -18,7 +19,7 @@ type AuthState = {
   isManager: boolean;
   loading: boolean;
   login: (p: LoginPayload) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => Promise<LogoutResult>;
   restore: () => Promise<boolean>;
 };
 
@@ -90,9 +91,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [memberFromToken],
   );
 
-  const logout = useCallback(async () => {
-    await apiLogout();
+  const logout = useCallback(async (): Promise<LogoutResult> => {
+    const result = await apiLogout();
     setUser(null);
+    return result;
   }, []);
 
   useEffect(() => {
@@ -124,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
+/* eslint react-refresh/only-export-components: ["warn", { "allowExportNames": ["useAuthContext"] }] */
 export const useAuthContext = () => {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error('useAuthContext must be used within AuthProvider');

@@ -162,7 +162,8 @@ export default function CommentList({ dreamId }: Props) {
                           수정
                         </button>
                       )}
-                    {canDelete && (
+
+                    {canDelete && editingCommentId !== comment.id && (
                       <button
                         className="btn btn-xs btn-error"
                         onClick={() => handleDelete(comment)}
@@ -261,7 +262,8 @@ export default function CommentList({ dreamId }: Props) {
                               수정
                             </button>
                           )}
-                        {canDeleteReply && (
+
+                        {canDeleteReply && editingCommentId !== reply.id && (
                           <button
                             className="btn btn-xs btn-error"
                             onClick={() => handleDelete(reply, comment.id)}
