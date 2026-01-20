@@ -65,12 +65,12 @@ export default function Dreams() {
             <li key={dream.id} className="card bg-base-100 shadow-md p-4">
               <Link
                 to={`/dreams/${dream.id}`}
-                className="text-xl font-semibold hover:underline"
+                className="text-xl font-semibold hover:unde rline"
               >
                 [{dream.dreamDate}] {dream.title}
               </Link>
               <p className="text-sm text-gray-500">
-                {dream.createdAt.slice(0, 10)} | {dream.authorUsername}
+                {dream.createdAt.slice(0, 10)} | {dream.authorUsername} | {dream.emotion}
               </p>
             </li>
           ))}
