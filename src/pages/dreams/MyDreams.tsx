@@ -69,7 +69,8 @@ export default function MyDreams() {
                 [{dream.dreamDate}] {dream.title}
               </Link>
               <p className="text-sm text-gray-500">
-                {dream.createdAt.slice(0, 10)} | {dream.authorUsername}
+                {dream.createdAt.slice(0, 10)} | {dream.authorUsername} |{' '}
+                {dream.emotion}
               </p>
             </li>
           ))}

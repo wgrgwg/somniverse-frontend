@@ -13,6 +13,8 @@ export interface Dream {
   createdAt: string;
   updatedAt?: string;
   authorUsername?: string;
+  analysisStatus: string;
+  emotion?: string;
 }
 
 export interface DreamPayload {

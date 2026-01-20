@@ -96,6 +96,13 @@ export default function DreamDetail() {
             </span>
           </div>
 
+          <div className="flex items-center gap-1">
+            <span className="font-semibold">감정:</span>
+            <span className="badge badge-info">
+              {dream.emotion ? dream.emotion : dream.analysisStatus}
+            </span>
+          </div>
+
           {dream.isDeleted && (
             <span className="badge badge-error ml-auto">삭제됨</span>
           )}
